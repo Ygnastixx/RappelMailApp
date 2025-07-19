@@ -1,14 +1,14 @@
 // src/main/java/com/example/rappelmail/EmailSender.java
 package fr.mahatsangy.rappelmail;
 
-import javax.activation.DataHandler;
-import javax.activation.DataSource;
-import javax.activation.FileDataSource;
-import javax.mail.*;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeBodyPart;
-import javax.mail.internet.MimeMessage;
-import javax.mail.internet.MimeMultipart;
+import jakarta.activation.DataHandler;
+import jakarta.activation.DataSource;
+import jakarta.activation.FileDataSource;
+import jakarta.mail.*;
+import jakarta.mail.internet.InternetAddress;
+import jakarta.mail.internet.MimeBodyPart;
+import jakarta.mail.internet.MimeMessage;
+import jakarta.mail.internet.MimeMultipart;
 
 import java.io.File;
 import java.io.IOException;
@@ -53,10 +53,10 @@ public class EmailSender {
      * @param subject            Le sujet de l'e-mail.
      * @param body               Le corps du message (texte brut ou HTML).
      * @param isHtml             Vrai si le corps est en HTML, faux pour texte brut.
-     * @param attachmentFilePath Le chemin complet vers le fichier à joindre (peut être null ou vide).
+     * @param attachmentFile     le fichier à joindre (peut être null ou vide).
      * @throws MessagingException Si une erreur survient lors de l'envoi de l'e-mail.
      */
-    public void sendEmail(String toAddress, String subject, String body, boolean isHtml, String attachmentFilePath) throws MessagingException {
+    public void sendEmail(String toAddress, String subject, String body, boolean isHtml, File attachmentFile) throws MessagingException {
         // 1. Configuration des propriétés de la session Mail
         // Ces propriétés disent à JavaMail comment se connecter au serveur SMTP.
         Properties props = new Properties();
@@ -103,8 +103,7 @@ public class EmailSender {
             multipart.addBodyPart(messageBodyPart);
 
             // Ajout de la pièce jointe si le chemin est fourni et valide
-            if (attachmentFilePath != null && !attachmentFilePath.trim().isEmpty()) {
-                File attachmentFile = new File(attachmentFilePath);
+            if (attachmentFile != null) {
                 if (attachmentFile.exists() && attachmentFile.isFile()) {
                     MimeBodyPart attachPart = new MimeBodyPart();
                     DataSource source = new FileDataSource(attachmentFile);
@@ -113,7 +112,7 @@ public class EmailSender {
                     multipart.addBodyPart(attachPart);
                     System.out.println("Pièce jointe ajoutée : " + attachmentFile.getName());
                 } else {
-                    System.err.println("Attention : Le fichier de pièce jointe spécifié n'existe pas ou n'est pas un fichier : " + attachmentFilePath);
+                    System.err.println("Attention : Le fichier de pièce jointe spécifié n'existe pas ou n'est pas un fichier : " + attachmentFile.getName());
                 }
             }
 
@@ -124,7 +123,7 @@ public class EmailSender {
             Transport.send(message);
 
             System.out.println("E-mail envoyé avec succès à " + toAddress + (isHtml ? " (HTML)" : " (texte simple)") +
-                    (attachmentFilePath != null && !attachmentFilePath.trim().isEmpty() ? " avec pièce jointe." : "."));
+                    (attachmentFile != null && attachmentFile.exists() && attachmentFile.isFile()? " avec pièce jointe." : "."));
 
         } catch (MessagingException e) {
             System.err.println("Erreur lors de l'envoi de l'e-mail : " + e.getMessage());
